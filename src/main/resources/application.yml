@@ -1,0 +1,38 @@
+app:
+  redis:
+    enable: true
+  cache:
+    enable: true
+    cache-type: redis
+    cache-names:
+      - entitiesByCategory
+      - entityByBookNameAndBookAuthor
+    caches:
+      entitiesByCategory:
+        expiry: 10s
+      entityByBookNameAndBookAuthor:
+        expiry: 10s
+
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    generate-ddl: true
+    open-in-view: false
+    properties:
+      hibernate:
+        show_sql: false
+        format_sql: false
+        hbm2ddl:
+          auto: create
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: postgres
+    url: jdbc:postgresql://localhost:5433/book_managing_db
+    hikari:
+      schema: book_managing_schema
+      connection-ini-sql: CREATE SCHEMA IF NOT EXISTS book_managing_schema
