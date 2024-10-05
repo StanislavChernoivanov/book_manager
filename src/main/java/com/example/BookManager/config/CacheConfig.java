@@ -15,13 +15,13 @@ import java.util.Map;
 
 @Configuration
 @EnableCaching
-@EnableConfigurationProperties(AppProperties.class)
+@EnableConfigurationProperties(AppCacheProperties.class)
 public class CacheConfig {
 
 
     @Bean
-    @ConditionalOnProperty(prefix = "app.cache", name = "enable", havingValue = "true")
-    public CacheManager redisCacheManager(AppProperties appProperties
+    @ConditionalOnProperty(prefix = "app.cache", name = "cache-type", havingValue = "redis")
+    public CacheManager redisCacheManager(AppCacheProperties appProperties
             , LettuceConnectionFactory lettuceConnectionFactory) {
         var defaultConfig = RedisCacheConfiguration.defaultCacheConfig();
         Map<String, RedisCacheConfiguration> redisCacheConfiguration = new HashMap<>();

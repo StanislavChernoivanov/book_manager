@@ -2,16 +2,15 @@ app:
   redis:
     enable: true
   cache:
-    enable: true
     cache-type: redis
     cache-names:
       - entitiesByCategory
       - entityByBookNameAndBookAuthor
     caches:
       entitiesByCategory:
-        expiry: 10s
+        expiry: 10m
       entityByBookNameAndBookAuthor:
-        expiry: 10s
+        expiry: 10m
 
 spring:
   data:

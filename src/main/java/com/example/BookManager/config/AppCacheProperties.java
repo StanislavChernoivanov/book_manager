@@ -1,7 +1,8 @@
 package com.example.BookManager.config;
 
 import lombok.Data;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import lombok.Setter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.time.Duration;
@@ -11,21 +12,21 @@ import java.util.List;
 import java.util.Map;
 
 @Data
-@ConditionalOnProperty(prefix = "app.cache")
-@ConfigurationProperties
-public class AppProperties {
+@ConditionalOnBean(CacheConfig.class)
+@ConfigurationProperties(prefix = "app.cache")
+public class AppCacheProperties {
 
-    private final List<String> cacheNames = new ArrayList<>();
+    private List<String> cacheNames = new ArrayList<>();
 
-    private final Map<String, CacheProperties> caches = new HashMap<>();
+    private Map<String, CacheProperties> caches = new HashMap<>();
 
-    private final String cacheType = "redis";
+    private String cacheType = "";
     @Data
     public static class CacheProperties {
-        private final Duration expiry = Duration.ZERO;
+        private Duration expiry = Duration.ZERO;
     }
 
-    interface Caches {
+    public interface CacheNames {
         String ENTITIES_BY_CATEGORY = "entitiesByCategory";
         String ENTITY_BY_BOOK_NAME_AND_AUTHOR_NAME = "entityByBookNameAndBookAuthor";
     }

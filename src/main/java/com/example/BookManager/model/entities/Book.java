@@ -23,6 +23,7 @@ public class Book implements Serializable {
 
     @JoinColumn(name = "category_id")
     @ManyToOne()
+    @ToString.Exclude
     private Category category;
     @Transient
     private String categoryName;

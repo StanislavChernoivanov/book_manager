@@ -1,10 +1,13 @@
 package com.example.BookManager.services;
 
+import com.example.BookManager.config.AppCacheProperties;
 import com.example.BookManager.model.entities.Book;
 import com.example.BookManager.model.entities.Category;
 import com.example.BookManager.model.repositories.BookRepository;
 import com.example.BookManager.model.repositories.CategoryRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
@@ -18,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.lang.reflect.Field;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers.exact;
@@ -32,9 +36,14 @@ public class BookServiceImpl implements BookService{
 
     private final CategoryRepository categoryRepository;
 
+    private final CacheManager cacheManager;
+
 
     @Override
-    @Cacheable(value = "entitiesByCategory", key = "#categoryName")
+    @Cacheable(cacheNames = AppCacheProperties
+            .CacheNames
+            .ENTITIES_BY_CATEGORY,
+    key = "#categoryName")
     public List<Book> findAllByCategoryName(String categoryName) {
 
         List<Book> books = bookRepository.findAllByCategoryName(categoryName);
@@ -44,7 +53,9 @@ public class BookServiceImpl implements BookService{
     }
 
     @Override
-    @Cacheable(value = "entityByBookNameAndBookAuthor", key = "#name + #author")
+    @Cacheable(cacheNames = AppCacheProperties
+            .CacheNames
+            .ENTITY_BY_BOOK_NAME_AND_AUTHOR_NAME, key = "#name + #author")
     public Book findByNameAndAuthor(String name, String author) {
         Book book = Book.builder().author(author).name(name).build();
 
@@ -80,8 +91,12 @@ public class BookServiceImpl implements BookService{
 
     @Override
     @Caching(evict = {
-            @CacheEvict(value = "entitiesByCategory", key = "#book.categoryName"),
-            @CacheEvict(value = "entityByBookNameAndBookAuthor"
+            @CacheEvict(cacheNames = AppCacheProperties
+                    .CacheNames
+                    .ENTITIES_BY_CATEGORY, key = "#book.categoryName"),
+            @CacheEvict(cacheNames = AppCacheProperties
+                    .CacheNames
+                    .ENTITY_BY_BOOK_NAME_AND_AUTHOR_NAME
                     , key = "#book.name + #book.author")
     })
     public Book update(Long id, Book book) throws IllegalAccessException {
@@ -110,18 +125,18 @@ public class BookServiceImpl implements BookService{
                 )
         );
 
-        clearEntitiesByCategoryCache(evictBook.getCategory().getName());
-        clearEntityByBookNameAndByBookAuthorCache(
-                evictBook.getName()
-                , evictBook.getAuthor()
-        );
+        Objects.requireNonNull(cacheManager
+                .getCache(AppCacheProperties
+                        .CacheNames
+                        .ENTITIES_BY_CATEGORY))
+                .evict(evictBook.getCategory().getName());
+
+        Objects.requireNonNull(cacheManager
+                .getCache(AppCacheProperties
+                        .CacheNames
+                        .ENTITY_BY_BOOK_NAME_AND_AUTHOR_NAME))
+                .evict(String.format("#%s + #%s",
+                        evictBook.getName(), evictBook.getAuthor()));
         bookRepository.deleteById(id);
     }
-
-    @CacheEvict(value = "entitiesByCategory", key = "#CategoryName")
-    private void clearEntitiesByCategoryCache(String categoryName) {}
-
-    @CacheEvict(value = "entityByBookNameAndBookAuthor", key = "#name + #author")
-    private void clearEntityByBookNameAndByBookAuthorCache(
-            String name, String author) {}
 }

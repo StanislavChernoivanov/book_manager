@@ -1,10 +1,7 @@
 package com.example.BookManager.model.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -26,5 +23,6 @@ public class Category implements Serializable {
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
     @Builder.Default
+    @ToString.Exclude
     private List<Book> books = new ArrayList<>();
 }
